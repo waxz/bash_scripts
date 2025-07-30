@@ -54,6 +54,13 @@ nohup bash -c "while true; do ssh -p 443 -R0:localhost:22 -o StrictHostKeyChecki
 
 pinggy_url=""
 pinggy_ssh_url=""
+
+# progress bar
+i=1
+sp="*x/-\|"
+echo -n ' '
+
+
 while [ "true" ];do
 if [ -s /tmp/pinggy.out ]; then
     pinggy_url_new=$(flock -s  /tmp/pinggy.out  cat  /tmp/pinggy.out | grep -oE "tcp://[a-zA-Z0-9.-]+\.pinggy\.link:[0-9.-]+");
@@ -63,13 +70,13 @@ if [ -s /tmp/pinggy.out ]; then
         pinggy_url_new="${pinggy_url_new/tcp:\/\//}"
         if [ "$pinggy_url" == "$pinggy_url_new"  ]; 
         then 
-            echo "not updated" ; 
+            printf "\b${sp:i++%${#sp}:1}";
         else 
             pinggy_url="$pinggy_url_new" ;
+            echo "Pinggy URL found:" $pinggy_url;
             curl -s https://jsonbin.1248369.xyz/proxy/pinggy/?key=$JSONBINKEY -d "{\"url\":\"$pinggy_url\"}"
         fi
 
-        echo "Pinggy URL found:" $pinggy_url;
     fi
 fi
 if [ -s /tmp/pinggy_ssh.out ]; then
@@ -80,14 +87,15 @@ if [ -s /tmp/pinggy_ssh.out ]; then
         pinggy_ssh_url_new="${pinggy_ssh_url_new/tcp:\/\//}"
         if [ "$pinggy_ssh_url" == "$pinggy_ssh_url_new"  ]; 
         then 
-            echo "not updated" ; 
+            printf "\b${sp:i++%${#sp}:1}";
         else 
             pinggy_ssh_url="$pinggy_ssh_url_new" ;
+            echo "Pinggy SSH URL found:" $pinggy_ssh_url;
             curl -s https://jsonbin.1248369.xyz/ssh/pinggy/?key=$JSONBINKEY -d "{\"url\":\"$pinggy_ssh_url\"}"
         fi
-        echo "Pinggy SSH URL found:" $pinggy_ssh_url;
+        
     fi
 fi
-sleep 1
-done
 
+sleep 60
+done
